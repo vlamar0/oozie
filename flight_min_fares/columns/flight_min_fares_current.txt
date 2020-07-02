@@ -1,0 +1,15 @@
+FLT_ID,integer
+CAPTURE_DATE,date
+FLT_NUM,integer
+DEP_DATE,date
+DEP_TIME,integer
+CLASS_CODE,string
+DEPTR_CITY_CD,string
+ARVL_CITY_CD,string
+LEG_ORIG,string
+LEG_DEST,string
+EQUIP,string
+AUTH_CAP,integer
+BASE_SEATS_SOLD,integer
+CURRENCY,string
+TOTALPRICE,decimal

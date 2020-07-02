@@ -1,0 +1,57 @@
+<workflow-app name="flight_min_fares" xmlns="uri:oozie:workflow:0.5">
+    <global>
+        <configuration>
+            <property>
+                <name>oozie.launcher.mapred.job.queue.name</name>
+                <value>${queue}</value>
+            </property>
+        </configuration>
+    </global>
+
+    <start to="flight_min_fares" />
+
+    <action name="flight_min_fares">
+        <spark xmlns="uri:oozie:spark-action:0.1">
+            <name>flight_min_fares</name>
+            <class>ru.innodata.dynseg.FlightMinFaresApplication</class>
+            <jar>${jobDir}/lib/flight_min_fares.jar</jar>
+            <spark-opts>
+                --master yarn
+                --executor-cores 10
+                --executor-memory 16g
+                --num-executors 95
+                --conf spark.driver.memory=20g
+                --conf spark.driver.maxResultSize=0
+                --conf spark.default.parallelism=256
+                --conf spark.yarn.executor.memoryOverhead=3000
+                --conf spark.sql.shuffle.partitions=4096
+                --conf spark.kryoserializer.buffer.max=1536m
+                --deploy-mode client
+                --jars ${jobDir}/lib/aeroflot-base_2.11-0.9.23-SNAPSHOT.jar,${jobDir}/lib/aeroflot-utils_2.11-0.9.23-SNAPSHOT.jar,${jobDir}/lib/jackson-dataformat-yaml-2.9.2.jar,${jobDir}/lib/snakeyaml-1.23.jar
+                --verbose ${jobDir}/lib/aeroflot-flight_min_fares-0.9.23-SNAPSHOT.jar
+                -DdateFormat ${DATE_FORMAT}
+                -DprocessingDate ${PROCESSING_DATE}
+                -DflightMinFaresHistoryPath ${HISTORY_PATH}
+                -DflightMinFaresHistoryFmt parquet
+                -DflightsMinFaresHistorySchemaPath ${HISTORY_SCHEMA}
+                -DflightMinFaresCurrentPath ${PATH_TO_UPD}
+                -DflightMinFaresCurrentFmt orc
+                -DflightMinFaresCurrentSchemaPath ${CURRENT_SCHEMA}
+                -DoutputPath ${CURRENT_PATH}
+                -DoutputFmt orc
+                -DoutputMaxRowsPerPartition 10
+            </spark-opts>
+        </spark>
+
+        <ok to="end" />
+        <error to="fail" />
+
+    </action>
+
+    <kill name="fail">
+        <message>FMF job failed [${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+
+    <end name="end" />
+
+</workflow-app>
